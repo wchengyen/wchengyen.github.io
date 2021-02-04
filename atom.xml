@@ -6,7 +6,7 @@
   <link href="http://example.com/atom.xml" rel="self"/>
   
   <link href="http://example.com/"/>
-  <updated>2021-02-04T02:25:48.487Z</updated>
+  <updated>2021-02-04T11:17:29.288Z</updated>
   <id>http://example.com/</id>
   
   <author>
@@ -15,6 +15,35 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>PV, SC 设定</title>
+    <link href="http://example.com/2021/02/04/eks-pv/"/>
+    <id>http://example.com/2021/02/04/eks-pv/</id>
+    <published>2021-02-04T06:18:48.000Z</published>
+    <updated>2021-02-04T11:17:29.288Z</updated>
+    
+    <content type="html"><![CDATA[<p>PV -  Persistent Volume 集群中已由管理员配置的一段网络存储<br>PVC - Persistent Volume Claim 是用户存储的请求</p><p>Storage Class - 管理员提供了一种描述他们提供的存储的“类”的方法。 不同的类可能映射到服务质量级别，或备份策略，或者由群集管理员确定的任意策略</p><p><a href="https://docs.aws.amazon.com/zh_cn/eks/latest/userguide/ebs-csi.html">eks EBS CSI doc </a></p><p>安装csi driver 后<br><img src="https://webnote.s3.cn-northwest-1.amazonaws.com.cn/csi.png" alt="csi"></p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;PV -  Persistent Volume 集群中已由管理员配置的一段网络存储&lt;br&gt;PVC - Persistent Volume Claim 是用户存储的请求&lt;/p&gt;
+&lt;p&gt;Storage Class - 管理员提供了一种描述他们提供的存储的“类”的方法。 不同的类</summary>
+      
+    
+    
+    
+    <category term="EKS" scheme="http://example.com/categories/EKS/"/>
+    
+    
+    <category term="EKS" scheme="http://example.com/tags/EKS/"/>
+    
+    <category term="K8S" scheme="http://example.com/tags/K8S/"/>
+    
+    <category term="EBS" scheme="http://example.com/tags/EBS/"/>
+    
+  </entry>
   
   <entry>
     <title>Hello World</title>
