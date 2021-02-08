@@ -6,7 +6,7 @@
   <link href="http://example.com/atom.xml" rel="self"/>
   
   <link href="http://example.com/"/>
-  <updated>2021-02-08T08:56:22.017Z</updated>
+  <updated>2021-02-08T08:20:12.023Z</updated>
   <id>http://example.com/</id>
   
   <author>
@@ -15,23 +15,6 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
-  
-  <entry>
-    <title>关于</title>
-    <link href="http://example.com/2021/02/08/about/index/"/>
-    <id>http://example.com/2021/02/08/about/index/</id>
-    <published>2021-02-08T08:56:22.013Z</published>
-    <updated>2021-02-08T08:56:22.017Z</updated>
-    
-    <content type="html"><![CDATA[<p>个人详细介绍</p>]]></content>
-    
-    
-    <summary type="html">个人简介</summary>
-    
-    
-    
-    
-  </entry>
   
   <entry>
     <title>在AWS EKS 中利用ingress 与loadbalancer 暴露ELB</title>
