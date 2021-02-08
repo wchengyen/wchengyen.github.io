@@ -6,7 +6,7 @@
   <link href="http://example.com/atom.xml" rel="self"/>
   
   <link href="http://example.com/"/>
-  <updated>2021-02-06T04:02:27.226Z</updated>
+  <updated>2021-02-08T08:20:12.023Z</updated>
   <id>http://example.com/</id>
   
   <author>
@@ -15,6 +15,35 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>在AWS EKS 中利用ingress 与loadbalancer 暴露ELB</title>
+    <link href="http://example.com/2021/02/08/eks-ingress-intro/"/>
+    <id>http://example.com/2021/02/08/eks-ingress-intro/</id>
+    <published>2021-02-08T06:22:41.000Z</published>
+    <updated>2021-02-08T08:20:12.023Z</updated>
+    
+    <content type="html"><![CDATA[<p><a href="https://aws.amazon.com/tw/blogs/opensource/kubernetes-ingress-aws-alb-ingress-controller/">reference</a></p><p>在K8S下有不同方式可以创建不同AWS ELB类型<br><strong>针对ALB</strong></p><p>Ingress 是在K8S 中对外暴露服务的其中一个方式, 作为Cluster 的一个出入口，Ingress 可以实现使用相同IP 地址暴露多个服务</p><p>AWS ingress controller 支持以下模式 IP mode/ instance mode<br>使用 <em>alb.ingress.kubernetes.io/target-type</em> 在ingress 中註明</p><p>instance mode: Ingress traffic starts from the ALB and reaches the <strong>NodePort</strong> opened for your service. Traffic is then routed to the pods within the cluster.</p><p>ip mode: Ingress traffic starts from the ALB and reaches the <strong>pods</strong> within the cluster directly. To use this mode, the networking plugin for the Kubernetes cluster must use a secondary IP address on ENI as pod IP, also known as the AWS CNI plugin for Kubernetes.</p><p><img src="https://webnote.s3.cn-northwest-1.amazonaws.com.cn/20210208-mode.png" alt="mode"></p><p><strong>针对NLB &amp;CLB</strong></p><p>在service 中如果设定为LoadBalancer ，预设将会创建CLB</p><p><img src="https://webnote.s3.cn-northwest-1.amazonaws.com.cn/20210208-clb.png" alt="clb"></p><p>但在K8S 1.15后，可以在annoation 中设定<br><code>      service.beta.kubernetes.io/aws-load-balancer-type: nlb</code></p><p><a href="https://github.com/kubernetes/cloud-provider-aws#cloud-provider-aws">cloud-provide-aws</a></p><p>将<a href="https://wchengyen.github.io/2021/02/05/eks-ingress-2048/">2048 游戏</a> 中设定 ALB ingress的 2048-ingress 与 2048-service 以以下设定替换后，可以用NLB 替代ALB</p><p> <img src="https://webnote.s3.cn-northwest-1.amazonaws.com.cn/20210208-nlb-lb-k8s-setting.png" alt="nlb-setting"></p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;&lt;a href=&quot;https://aws.amazon.com/tw/blogs/opensource/kubernetes-ingress-aws-alb-ingress-controller/&quot;&gt;reference&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;在K8S下有不同方式可以创建不同</summary>
+      
+    
+    
+    
+    <category term="EKS" scheme="http://example.com/categories/EKS/"/>
+    
+    
+    <category term="EKS" scheme="http://example.com/tags/EKS/"/>
+    
+    <category term="ingress" scheme="http://example.com/tags/ingress/"/>
+    
+    <category term="NLB" scheme="http://example.com/tags/NLB/"/>
+    
+  </entry>
   
   <entry>
     <title>使用ingress controller 在AWS EKS 上建立2048游戏</title>
