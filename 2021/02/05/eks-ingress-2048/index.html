@@ -28,7 +28,7 @@
 <meta property="og:image" content="https://webnote.s3.cn-northwest-1.amazonaws.com.cn/20210205-get-ingress.png">
 <meta property="og:image" content="https://webnote.s3.cn-northwest-1.amazonaws.com.cn/20210205-2048.png">
 <meta property="article:published_time" content="2021-02-05T12:50:56.000Z">
-<meta property="article:modified_time" content="2021-02-08T12:23:03.671Z">
+<meta property="article:modified_time" content="2021-02-09T08:00:50.607Z">
 <meta property="article:author" content="Chris Wang">
 <meta property="article:tag" content="EKS">
 <meta property="article:tag" content="K8S">
@@ -330,10 +330,10 @@
         <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2021/02/05/eks-ingress-2048/#comments" class="article-comment-link">评论</a></span>
         
 	
-		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 493(字)</span>
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 552(字)</span>
 	
 	
-		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 2(分)</span>
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 3(分)</span>
 	
 
       </div>
@@ -365,6 +365,8 @@
 <li>部署2048 game<br>下载 <a target="_blank" rel="noopener" href="https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/master/docs/examples/2048">2048 yaml</a></li>
 </ol>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f 2048-namespace.yaml</span><br><span class="line">kubectl apply -f 2048-deployment.yaml</span><br><span class="line">kubectl apply -f 2048-service.yaml</span><br><span class="line">kubectl apply -f 2048-ingress.yaml</span><br></pre></td></tr></table></figure>
+<p>ingress yaml 内容</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">apiVersion: extensions&#x2F;v1beta1</span><br><span class="line">kind: Ingress</span><br><span class="line">metadata:</span><br><span class="line">  name: &quot;2048-ingress&quot;</span><br><span class="line">  namespace: &quot;2048-game&quot;</span><br><span class="line">  annotations:</span><br><span class="line">    kubernetes.io&#x2F;ingress.class: alb</span><br><span class="line">    alb.ingress.kubernetes.io&#x2F;scheme: internet-facing</span><br><span class="line">    #alb.ingress.kubernetes.io&#x2F;target-type: ip</span><br><span class="line">  labels:</span><br><span class="line">    app: 2048-ingress</span><br><span class="line">spec:</span><br><span class="line">  rules:</span><br><span class="line">    - http:</span><br><span class="line">        paths:</span><br><span class="line">          - path: &#x2F;*</span><br><span class="line">            backend:</span><br><span class="line">              serviceName: &quot;service-2048&quot;</span><br><span class="line">              servicePort: 80</span><br></pre></td></tr></table></figure>
 <ol start="7">
 <li>确认部署状况</li>
 </ol>
