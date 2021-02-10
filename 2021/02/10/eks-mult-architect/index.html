@@ -27,7 +27,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://webnote.s3.cn-northwest-1.amazonaws.com.cn/20210210-arm64nodegroup.png">
 <meta property="article:published_time" content="2021-02-10T08:15:52.000Z">
-<meta property="article:modified_time" content="2021-02-10T09:11:16.350Z">
+<meta property="article:modified_time" content="2021-02-10T09:13:34.876Z">
 <meta property="article:author" content="Chris Wang">
 <meta property="article:tag" content="EKS">
 <meta property="article:tag" content="arm64">
@@ -361,11 +361,11 @@
 <ol start="2">
 <li>创建AMD64 node group</li>
 </ol>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">eksctl create nodegroup \</span><br><span class="line">--cluster eks-multi-arch \</span><br><span class="line">--region ap-northeast-1 \</span><br><span class="line">--name x86-mng \</span><br><span class="line">--node-type m5.large \</span><br><span class="line">--nodes 1 \</span><br><span class="line">--nodes-min 1 \</span><br><span class="line">--nodes-max 3 \</span><br><span class="line">--managed</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">eksctl create nodegroup \</span><br><span class="line">--cluster eks-multi-arch \</span><br><span class="line">--region cn-northwest-1 \</span><br><span class="line">--name x86-mng \</span><br><span class="line">--node-type m5.large \</span><br><span class="line">--nodes 1 \</span><br><span class="line">--nodes-min 1 \</span><br><span class="line">--nodes-max 3 \</span><br><span class="line">--managed</span><br></pre></td></tr></table></figure>
 <ol start="3">
 <li>创建ARM64 node group</li>
 </ol>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ eksctl create nodegroup \</span><br><span class="line">--cluster eks-multi-arch \</span><br><span class="line">--region ap-northeast-1 \</span><br><span class="line">--name graviton-mng \</span><br><span class="line">--node-type m6g.large \</span><br><span class="line">--nodes 1 \</span><br><span class="line">--nodes-min 1 \</span><br><span class="line">--nodes-max 3 \</span><br><span class="line">--managed</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ eksctl create nodegroup \</span><br><span class="line">--cluster eks-multi-arch \</span><br><span class="line">--region cn-northwest-1 \</span><br><span class="line">--name graviton-mng \</span><br><span class="line">--node-type m6g.large \</span><br><span class="line">--nodes 1 \</span><br><span class="line">--nodes-min 1 \</span><br><span class="line">--nodes-max 3 \</span><br><span class="line">--managed</span><br></pre></td></tr></table></figure>
 <ol start="4">
 <li>创建结果<br><img src="https://webnote.s3.cn-northwest-1.amazonaws.com.cn/20210210-arm64nodegroup.png" alt="arm64&amp;amd64nodegroup"></li>
 </ol>
