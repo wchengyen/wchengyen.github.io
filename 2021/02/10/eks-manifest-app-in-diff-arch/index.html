@@ -28,7 +28,7 @@
 <meta property="og:image" content="https://webnote.s3.cn-northwest-1.amazonaws.com.cn/20210210-manifest-inspect.png">
 <meta property="og:image" content="https://webnote.s3.cn-northwest-1.amazonaws.com.cn/20210210-manifest-hello-result.png">
 <meta property="article:published_time" content="2021-02-10T09:25:22.000Z">
-<meta property="article:modified_time" content="2021-02-10T10:11:05.538Z">
+<meta property="article:modified_time" content="2021-02-10T14:03:28.932Z">
 <meta property="article:author" content="Chris Wang">
 <meta property="article:tag" content="EKS">
 <meta property="article:tag" content="Docker">
@@ -379,10 +379,9 @@
 <p>Ideally a manifest list is created from images that are <strong>identical in function for different os/arch combinations. For this reason, manifest lists are often referred to as “multi-arch images”</strong>. However, a user could create a manifest list that points to two images – one for windows on amd64, and one for darwin on amd64.</p>
 <p>为了在不同的架构ARM64/ AMD64中可以不指定docker image 名称, 可以用同名的方式来使用docker image。因此使用docker manifest 实现此功能</p>
 <ol>
-<li><p>依照reference 示范github 中下载app 测试</p>
-<p><code>git clone https://github.com/jlbutler/yahw.git &amp;&amp; cd yahw</code></p>
-</li>
+<li>依照reference 示范github 中下载app 测试</li>
 </ol>
+<p><code>git clone https://github.com/jlbutler/yahw.git &amp;&amp; cd yahw</code></p>
 <p><code>make all</code></p>
 <p><code>docker images hello</code></p>
 <ol start="2">
@@ -397,10 +396,10 @@
 <p>验证ECR中images <code>aws ecr --region $&#123;AWS_REGION&#125; describe-images --repository-name hello</code></p>
 </li>
 <li><p>建立docker manifest</p>
-</li>
-</ol>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker manifest create $&#123;AWS_ACCOUNT_ID&#125;.dkr.ecr.$&#123;AWS_REGION&#125;.amazonaws.com.cn&#x2F;hello \</span><br><span class="line">$&#123;AWS_ACCOUNT_ID&#125;.dkr.ecr.$&#123;AWS_REGION&#125;.amazonaws.com.cn&#x2F;hello:amd64  \</span><br><span class="line">$&#123;AWS_ACCOUNT_ID&#125;.dkr.ecr.$&#123;AWS_REGION&#125;.amazonaws.com.cn&#x2F;hello:arm64</span><br></pre></td></tr></table></figure>
 <p>确认manifest 设定<br><code>docker manifest inspect $&#123;AWS_ACCOUNT_ID&#125;.dkr.ecr.$&#123;AWS_REGION&#125;.amazonaws.com.cn/hello</code></p>
+</li>
+</ol>
 <p>如果需要修改, 可以在~/.docker/manifests 中找到manifest 档案进行修改<br><img src="https://webnote.s3.cn-northwest-1.amazonaws.com.cn/20210210-manifest-inspect.png" alt="manifest imspect"></p>
 <ol start="6">
 <li><p>push manifest 到ECR<br><code>docker manifest push $&#123;AWS_ACCOUNT_ID&#125;.dkr.ecr.$&#123;AWS_REGION&#125;.amazonaws.com.cn/hello</code></p>
