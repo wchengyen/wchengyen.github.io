@@ -6,7 +6,7 @@
   <link href="http://example.com/atom.xml" rel="self"/>
   
   <link href="http://example.com/"/>
-  <updated>2021-02-21T13:50:26.562Z</updated>
+  <updated>2021-02-21T13:52:38.853Z</updated>
   <id>http://example.com/</id>
   
   <author>
@@ -17,11 +17,11 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>eks-hpa</title>
+    <title>在EKS中设定HPA 来增减pods</title>
     <link href="http://example.com/2021/02/20/eks-hpa/"/>
     <id>http://example.com/2021/02/20/eks-hpa/</id>
     <published>2021-02-20T06:20:22.000Z</published>
-    <updated>2021-02-21T13:50:26.562Z</updated>
+    <updated>2021-02-21T13:52:38.853Z</updated>
     
     <content type="html"><![CDATA[<p><a href="https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/">HPA doc</a><br>The Horizontal Pod Autoscaler (HPA) automatically scales the number of Pods in a replication controller, deployment, replica set or stateful set based on observed CPU utilization (or, with custom metrics support, on some other application-provided metrics).</p><p><strong>HPA</strong>根据资源的使用状况来对Pods 进行伸缩, metrics-server 负责提供metrics 来源<br><img src="https://webnote.s3.cn-northwest-1.amazonaws.com.cn/20210220-hpa.png" alt="hpa"></p><p><a href="https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler">CA doc</a></p><p>Cluster Autoscaler is a tool that automatically adjusts the size of the Kubernetes cluster when one of the following conditions is true:</p><ol><li>there are pods that failed to run in the cluster due to insufficient resources.</li><li>there are nodes in the cluster that have been underutilized for an extended period of time and their pods can be placed on other existing nodes.</li></ol><p><strong>CA</strong> 自动调整集群大小(node)的工具，当1. Pod 因为资源不足运行失败 2. 当pod 使用率太低一段时间，并且可以转移到其他node 上</p><p>HPA lab <a href="https://www.eksworkshop.com/beginner/080_scaling/">reference link</a></p><ol><li><p>建立metrics server<br><code>kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.4.1/components.yaml</code></p></li><li><p>确认 metric server pod是否已经成功建立, 以及HPA 状况<br>确认状态成功 status : True<br><code>kubectl get apiservice v1beta1.metrics.k8s.io -o json</code> </p></li></ol><p>确认 metric server pod<br><img src="https://webnote.s3.cn-northwest-1.amazonaws.com.cn/20210220-metric-pod.png" alt="metric-pod"></p><ol start="3"><li>设置测试App </li></ol><p>获取海外docker image方法 <a href="https://github.com/nwcdlabs/container-mirror">reference doc</a></p><p>下载hpa-example 为php-apache 并且修改cpu 大小等设置</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">kubectl create deployment php-apache --image&#x3D;gcr.io&#x2F;google_containers&#x2F;hpa-example:latest #修改为国内image link</span><br><span class="line">kubectl set resources deploy php-apache --requests&#x3D;cpu&#x3D;200m #将php-apache cpu 限制设置为200m</span><br><span class="line">kubectl expose deploy php-apache --port 80 #暴露为新的service</span><br></pre></td></tr></table></figure><ol start="4"><li>设置HPA<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">kubectl autoscale deployment php-apache &#96;#The target average CPU utilization&#96; \</span><br><span class="line">    --cpu-percent&#x3D;50 \</span><br><span class="line">    --min&#x3D;1 &#96;#The lower limit for the number of pods that can be set by the autoscaler&#96; \</span><br><span class="line">    --max&#x3D;10 &#96;#The upper limit for the number of pods that can be set by the autoscaler&#96;</span><br></pre></td></tr></table></figure>确认hpa 状况</li></ol><p><code>kubectl get hpa</code></p><p><img src="https://webnote.s3.cn-northwest-1.amazonaws.com.cn/20210220-get-hpa-setting.png" alt="hpa-setting"></p><ol start="5"><li>制造压力触发scale </li></ol><p>建立pod 进行压测</p><p><code>kubectl --generator=run-pod/v1 run -i --tty load-generator --image=busybox /bin/sh</code></p><p>输入<br><code>while true; do wget -q -O - http://php-apache; done</code></p><p>确认hpa 状态<br><code>kubectl get hpa -w</code></p><p><img src="https://webnote.s3.cn-northwest-1.amazonaws.com.cn/20210220-hpa-result.png" alt="hpa-result"></p><p>pods 将随CPU 的使用状况进行增减</p>]]></content>
     
