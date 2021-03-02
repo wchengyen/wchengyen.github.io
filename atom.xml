@@ -6,7 +6,7 @@
   <link href="http://example.com/atom.xml" rel="self"/>
   
   <link href="http://example.com/"/>
-  <updated>2021-02-21T13:52:38.853Z</updated>
+  <updated>2021-03-02T08:04:26.417Z</updated>
   <id>http://example.com/</id>
   
   <author>
@@ -15,6 +15,36 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>pyk2 设定与执行</title>
+    <link href="http://example.com/2021/03/02/pyk2/"/>
+    <id>http://example.com/2021/03/02/pyk2/</id>
+    <published>2021-03-02T07:43:33.000Z</published>
+    <updated>2021-03-02T08:04:26.417Z</updated>
+    
+    <content type="html"><![CDATA[<p>记录下如何使用pyk2 获取数据</p><ol><li>下载Pyk2 源码以及相关安装包  </li><li>windows 下解压后运行setup_pyk2.bat</li><li>在pyk2env\Scripts 下执行activate 启动pythen venv环境</li><li>执行mwinit -u OPXXXXXX –cn<br>认证</li></ol><p><img src="https://webnote.s3.cn-northwest-1.amazonaws.com.cn/20210302_mwinit.png" alt="mwinit"></p><ol start="5"><li>可以开始执行python </li></ol>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;记录下如何使用pyk2 获取数据&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;下载Pyk2 源码以及相关安装包  &lt;/li&gt;
+&lt;li&gt;windows 下解压后运行setup_pyk2.bat&lt;/li&gt;
+&lt;li&gt;在pyk2env\Scripts 下执行activate 启动pythen ven</summary>
+      
+    
+    
+    
+    <category term="tooling" scheme="http://example.com/categories/tooling/"/>
+    
+    
+    <category term="python" scheme="http://example.com/tags/python/"/>
+    
+    <category term="tool" scheme="http://example.com/tags/tool/"/>
+    
+  </entry>
   
   <entry>
     <title>在EKS中设定HPA 来增减pods</title>
