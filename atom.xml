@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://wchengyen.github.io</id>
+    <title>Chris 学习笔记</title>
+    <updated>2023-12-07T08:05:17.506Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://wchengyen.github.io"/>
+    <link rel="self" href="https://wchengyen.github.io/atom.xml"/>
+    <subtitle>温故而知新</subtitle>
+    <logo>https://wchengyen.github.io/images/avatar.png</logo>
+    <icon>https://wchengyen.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2023, Chris 学习笔记</rights>
+    <entry>
+        <title type="html"><![CDATA[自动化 - 在Excel中编写VBA自动触发邮件]]></title>
+        <id>https://wchengyen.github.io/post/zi-dong-hua-zai-excel-zhong-bian-xie-vba-zi-dong-hong-fa-you-jian/</id>
+        <link href="https://wchengyen.github.io/post/zi-dong-hua-zai-excel-zhong-bian-xie-vba-zi-dong-hong-fa-you-jian/">
+        </link>
+        <updated>2023-12-07T07:04:31.000Z</updated>
+        <content type="html"><![CDATA[<p>为了能够自动化群组发信, 并且需要给定乱数编码, 所以研究了一下VBA.</p>
+<p><strong>Visual Basic for Applications（VBA）是微软开发出来在其桌面应用程序中执行通用的自动化(OLE)任务的编程语言。主要能用来扩展Windows的应用程序功能，特别是Microsoft Office软件。</strong></p>
+<h3 id="如何在excel-中使用vba">如何在Excel 中使用VBA</h3>
+<p>在Excel 中开启VBA, 需要在Excel选项中选定勾选开发工具<br>
+<img src="https://wchengyen.github.io/post-images/1701932710880.jpeg" alt="" loading="lazy"></p>
+<p>开启后可以看到开发者选项<br>
+按下Visual Basic 编辑VBA 代码, 插入按钮以触发VBA<br>
+<img src="https://wchengyen.github.io/post-images/1701932735493.jpeg" alt="" loading="lazy"></p>
+<p>新增模块, 进行VBA 编写<br>
+<img src="https://wchengyen.github.io/post-images/1701932762815.jpeg" alt="" loading="lazy"></p>
+<h3 id="visual-basic-与宏的区别">Visual Basic 与宏的区别</h3>
+<p>宏 ：是录制好的一系列指令, 可以重复执行, 不需要手写代码<br>
+Visual Basic : 是支持Microsoft office 等程序的程式语言, 可以调用其中的功能</p>
+<p>VBA 代码</p>
+<pre><code class="language-vba">
+Sub send_mail()
+Dim ObjOL As Object
+Dim itmNewMail As Outlook.MailItem
+Dim mailaddress As String
+
+Dim ws As Worksheet
+Set ws = Sheets(&quot;Gameday&quot;)
+
+arrT = Range(&quot;A:A&quot;) '姓名
+arrE = Range(&quot;B:B&quot;) 'Email
+arrR = Range(&quot;C:C&quot;) 'Random Code
+
+Dim Content As String
+Dim Title As String
+Title = ws.Range(&quot;D2&quot;) '邮件title
+Content = ws.Range(&quot;E2&quot;) '邮件内容
+
+For i = 2 To 3 '******* Excel执行范围, 非常重要需要修改
+
+'引用Microsoft Outlook 对象
+Set ObjOL = CreateObject(&quot;Outlook.Application&quot;)
+Set itmNewMail = ObjOL.CreateItem(olMailItem)
+
+'******邮件参数
+With itmNewMail
+        .Subject = Title 
+        .Body = Content + &quot;Random Code =&quot; + arrR(i, 1) '内容加入乱码
+        .To = arrE(i, 1)  'email
+        .Display  '启动outlook 窗口
+        .Send '发送
+End With
+Set ObjOL = Nothing
+Set itmNewMail = Nothing
+Next i
+
+End Sub
+</code></pre>
+<p>Excel 在VBA 中术语定义</p>
+<ul>
+<li>Excel是一个应用程序（Application）</li>
+<li>Excel文件 -&gt;（Workbook）</li>
+<li>Excel 里面的分页 -&gt;（Worksheet）</li>
+<li>Excel 单元格 -&gt;（Cell）</li>
+<li>Excel 单元格区域 -&gt;（Range）</li>
+</ul>
+<h3 id="代码说明">代码说明</h3>
+<p>在Excel 中A列为姓名, B列为Email, C列为随机验证码 Random Code, D2 为邮件标题, E2 为邮件内容。</p>
+<p>在准备好后以上内容后, 按键触发Outlook发送邮件</p>
+<h3 id="问题处理">问题处理</h3>
+<p>一般会遇到安全性设定问题, 需要设定VBA 相对应的安全设定, 允许VBA 运行<br>
+<img src="https://wchengyen.github.io/post-images/1701932793722.jpeg" alt="" loading="lazy"></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[K8S 镜像加速方案分析（2) 镜像格式优化以及Lazy-pull]]></title>
+        <id>https://wchengyen.github.io/post/k8s-jing-xiang-jia-su-fang-an-fen-xi-2-jing-xiang-ge-shi-you-hua-yi-ji-lazy-pull/</id>
+        <link href="https://wchengyen.github.io/post/k8s-jing-xiang-jia-su-fang-an-fen-xi-2-jing-xiang-ge-shi-you-hua-yi-ji-lazy-pull/">
+        </link>
+        <updated>2023-12-02T05:21:20.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="不合理的传统镜像">不合理的传统镜像</h2>
+<p><strong>Pulling packages accounts for 76% of container start time.<br>
+but only 6.4% of that data is read. <br>
+Tyler Harter, University of Wisconsin—Madison</strong></p>
+<p><strong>拉取镜像的时间占容器启动时间76%, 但只有6.4% 的数据实际被使用。</strong></p>
+<p>传统镜像的问题</p>
+<ul>
+<li>镜像Layer 被打包为Gzip, Gzip 后不支持seek, 无法搜索内容, 因此不能按需加载</li>
+<li>无法针对Layer 中小数据块的数据校验, 只有唯一个hash 校验, 因此需要全部下载</li>
+<li>内容冗余, 数据重复存在镜像中</li>
+</ul>
+<h2 id="新镜像格式">新镜像格式</h2>
+<p>ContainerD 为了解决镜像问题, 根据Google 提出的CRFS 格式建立了<strong>Stargz</strong>, 以及改良的<strong>eStargz</strong>,</p>
+<p>Stragz 将数据分别打包为多个Gzip 档案, 并且新增TOC (Json 格式的内容索引), 因此, 经过改良后, 可以分区块确认数据内容, 验证等, 使Lazy Pull 成为可能</p>
+<p>eStargz 更进一步将启动pods 必需载入的内容放在landmark 前, 并且标注为prioritized files, 预设将会自动下载, 避免需要筛选再拉取的时间浪费<br>
+<img src="https://wchengyen.github.io/post-images/1701521653118.png" alt="" loading="lazy"></p>
+<p>除了Stargz 外, 蚂蚁金服的Nydus, 阿里的overlaybd, AWS 的Seekable OCI 等都是改善传统镜像后的延迟架载技术.</p>
+<h2 id="lazy-pull">Lazy Pull</h2>
+<figure data-type="image" tabindex="1"><img src="https://wchengyen.github.io/post-images/1701595470717.jpg" alt="" loading="lazy"></figure>
+<p>Snapshotter 是ContainerD 中负责镜像处理的底层引擎。传统镜像下载将会下载metadata以及 layers 之后执行解压缩与合并动作。</p>
+<p>但在改变新镜像格式为Stargz 等新格式后, ContainerD (v.1.4.2 后)也需要将底层Snapshotter 变更为相对应的Remote Sanpshotter</p>
+<pre><code>version = 2
+
+# Plug stargz snapshotter into containerd
+# Containerd recognizes stargz snapshotter through specified socket address.
+# The specified address below is the default which stargz snapshotter listen to.
+[proxy_plugins]
+  [proxy_plugins.stargz]
+    type = &quot;snapshot&quot;
+    address = &quot;/run/containerd-stargz-grpc/containerd-stargz-grpc.sock&quot;
+
+# Use stargz snapshotter through CRI
+[plugins.&quot;io.containerd.grpc.v1.cri&quot;.containerd]
+  snapshotter = &quot;stargz&quot;
+  disable_snapshot_annotations = false
+</code></pre>
+<p>在变更后, <strong>Remote Sanpshotter 将检验layer 是否符合远程挂载的要求, 如果符合, 将会直接跳过下载与解压缩部分, 直接mount remote layer.</strong> 这将大幅减少镜像处理时间。</p>
+<figure data-type="image" tabindex="2"><img src="https://wchengyen.github.io/post-images/1701596856214.jpg" alt="" loading="lazy"></figure>
+<p>当用户或者Pod 启动需要使用Layer 时, FUSE 框架将会调用Stargz-snapshotter, Snapshotter 从镜像仓库读取Layer 文件后返回给VFS, 使用者可以在无感知的情况使用。</p>
+<h2 id="小结">小结</h2>
+<p><strong>利用新镜像格式可以节约大镜像在下载以及解压缩部分时间, 但仍对仓库与K8S 间网路有一定要求, 当网路拥塞时, 也会出现问题</strong></p>
+<p>如果计划使用新镜像以及Lazy pull 功能, 需进行以下改造</p>
+<ol>
+<li>在镜像建立阶段使用Nerdctl 等工具制作新格式镜像</li>
+<li>在ContainerD 中改变设定, 使用对应 snapshotter</li>
+</ol>
+<h2 id="ref">Ref :</h2>
+<ul>
+<li>https://github.com/containerd/stargz-snapshotter</li>
+<li>https://github.com/containerd/nerdctl/blob/main/docs/stargz.md</li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[K8S 镜像加速方案分析（1) 背景以及海外镜像]]></title>
+        <id>https://wchengyen.github.io/post/k8s-jing-xiang-jia-su-fang-an-fen-xi-1/</id>
+        <link href="https://wchengyen.github.io/post/k8s-jing-xiang-jia-su-fang-an-fen-xi-1/">
+        </link>
+        <updated>2023-12-01T13:53:33.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="常见pod启动慢-镜像拉取时间太长问题">常见pod启动慢, 镜像拉取时间太长问题</h2>
+<p>用着K8S 集群, 往往遇到的第一个难题就是官方镜像拉不下来, 或者拉得太慢时间太久<br>
+当应用慢慢增加, 集群变大以后, 遇见的就将会是pods 启动太慢<br>
+或者当需要跑大模型在K8S 上, 将也会遇见同样的镜像拉取太慢, pods 启动等待时间太久问题</p>
+<h2 id="pod启动步骤">pod启动步骤</h2>
+<figure data-type="image" tabindex="1"><img src="https://wchengyen.github.io/post-images/1701439175957.png" alt="" loading="lazy"></figure>
+<p>Kubelet 透过CRI 接口运行RunPodSandBox, 其中在生成container的步骤中, 会进行镜像的处理<br>
+先确认本地是否存在镜像, 不在的话, 就进行镜像拉取</p>
+<figure data-type="image" tabindex="2"><img src="https://wchengyen.github.io/post-images/1701489234439.jpg" alt="" loading="lazy"></figure>
+<h2 id="镜像拉取步骤">镜像拉取步骤</h2>
+<p>镜像拉取主要分为三部分：下载, 解压缩与合并<br>
+其中耗时最久的部分为下载, 其次为解压缩<br>
+<img src="https://wchengyen.github.io/post-images/1701490469331.png" alt="" loading="lazy"></p>
+<h2 id="镜像拉取慢常见原因">镜像拉取慢常见原因</h2>
+<ul>
+<li>网路不稳定, K8S 与仓库间网路问题-&gt; 改造网路</li>
+<li>镜像太大 - &gt; 改造镜像</li>
+<li>K8S 节点多造成的并发流量太大  -&gt; 改造并发</li>
+</ul>
+<h2 id="改造网路环境">改造网路环境</h2>
+<p>最常见的镜像下载慢是因为在中国直接下载海外镜像库公共镜像<br>
+常见的海外镜像库有</p>
+<ul>
+<li>docker.hub</li>
+<li>gcr.io/ k8s.gcr.io(冻结)/registry.k8s.io</li>
+<li>quay.io</li>
+</ul>
+<p><strong>主要原因是中国与海外间的网路不稳定</strong><br>
+建议 ：</p>
+<ol>
+<li>使用中国境内镜像仓库, 将海外镜像下载后存在镜像仓库中, 解决最后一里路问题, 避免K8S 跨海直接访问仓库下载</li>
+<li>海外镜像下载方式, 可以考虑国内公有镜像库, 或者企业搭建稳定的跨海网路</li>
+</ol>
+<p>各个云厂商或者大学院校为提供开发研究环境, 均有提供公开仓库项目<br>
+以下为AWS 中国区提供项目<br>
+<img src="https://wchengyen.github.io/post-images/1701493757694.png" alt="" loading="lazy"></p>
+<p>原理是在AWS海外区利用 Codebuild 拉取公有镜像库镜像, 并向国内区域AWS ECR 推送<br>
+优点: 针对AWS 中国区免费使用<br>
+缺点: 镜像需要提PR 后更新, 因此更新频率不定, 只针对公开镜像</p>
+<p>下篇将介绍 镜像太大时改造镜像方案</p>
+<h2 id="ref">Ref:</h2>
+<p>https://www.bilibili.com/read/cv20094876/<br>
+https://fuweid.com/post/2023-containerd-17-transfer-service/<br>
+https://github.com/nwcdlabs/container-mirror</p>
+]]></content>
+    </entry>
+</feed>

@@ -1,0 +1,265 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+<title>K8S 镜像加速方案分析（2) 镜像格式优化以及Lazy-pull | Chris 学习笔记</title>
+
+<link rel="shortcut icon" href="https://wchengyen.github.io/favicon.ico?v=1701936313345">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wchengyen.github.io/styles/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script>
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            Chris 学习笔记
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+                <div class="nav-item">
+                    
+                        <a href="/" class="menu gt-a-link">
+                            首页
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/archives" class="menu gt-a-link">
+                            归档
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/tags" class="menu gt-a-link">
+                            标签
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/post/about" class="menu gt-a-link">
+                            关于
+                        </a>
+                    
+                </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1701936313345" action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    K8S 镜像加速方案分析（2) 镜像格式优化以及Lazy-pull
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2023-12-02 ·
+                    </time>
+                    
+                        <a href="https://wchengyen.github.io/tag/W4zkmAR42/" class="post-tags">
+                            # k8s
+                        </a>
+                    
+                        <a href="https://wchengyen.github.io/tag/ag8ray96MP/" class="post-tags">
+                            # 镜像加速
+                        </a>
+                    
+                        <a href="https://wchengyen.github.io/tag/400soIqKSU/" class="post-tags">
+                            # arch
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <h2 id="不合理的传统镜像">不合理的传统镜像</h2>
+<p><strong>Pulling packages accounts for 76% of container start time.<br>
+but only 6.4% of that data is read. <br>
+Tyler Harter, University of Wisconsin—Madison</strong></p>
+<p><strong>拉取镜像的时间占容器启动时间76%, 但只有6.4% 的数据实际被使用。</strong></p>
+<p>传统镜像的问题</p>
+<ul>
+<li>镜像Layer 被打包为Gzip, Gzip 后不支持seek, 无法搜索内容, 因此不能按需加载</li>
+<li>无法针对Layer 中小数据块的数据校验, 只有唯一个hash 校验, 因此需要全部下载</li>
+<li>内容冗余, 数据重复存在镜像中</li>
+</ul>
+<h2 id="新镜像格式">新镜像格式</h2>
+<p>ContainerD 为了解决镜像问题, 根据Google 提出的CRFS 格式建立了<strong>Stargz</strong>, 以及改良的<strong>eStargz</strong>,</p>
+<p>Stragz 将数据分别打包为多个Gzip 档案, 并且新增TOC (Json 格式的内容索引), 因此, 经过改良后, 可以分区块确认数据内容, 验证等, 使Lazy Pull 成为可能</p>
+<p>eStargz 更进一步将启动pods 必需载入的内容放在landmark 前, 并且标注为prioritized files, 预设将会自动下载, 避免需要筛选再拉取的时间浪费<br>
+<img src="https://wchengyen.github.io/post-images/1701521653118.png" alt="" loading="lazy"></p>
+<p>除了Stargz 外, 蚂蚁金服的Nydus, 阿里的overlaybd, AWS 的Seekable OCI 等都是改善传统镜像后的延迟架载技术.</p>
+<h2 id="lazy-pull">Lazy Pull</h2>
+<figure data-type="image" tabindex="1"><img src="https://wchengyen.github.io/post-images/1701595470717.jpg" alt="" loading="lazy"></figure>
+<p>Snapshotter 是ContainerD 中负责镜像处理的底层引擎。传统镜像下载将会下载metadata以及 layers 之后执行解压缩与合并动作。</p>
+<p>但在改变新镜像格式为Stargz 等新格式后, ContainerD (v.1.4.2 后)也需要将底层Snapshotter 变更为相对应的Remote Sanpshotter</p>
+<pre><code>version = 2
+
+# Plug stargz snapshotter into containerd
+# Containerd recognizes stargz snapshotter through specified socket address.
+# The specified address below is the default which stargz snapshotter listen to.
+[proxy_plugins]
+  [proxy_plugins.stargz]
+    type = &quot;snapshot&quot;
+    address = &quot;/run/containerd-stargz-grpc/containerd-stargz-grpc.sock&quot;
+
+# Use stargz snapshotter through CRI
+[plugins.&quot;io.containerd.grpc.v1.cri&quot;.containerd]
+  snapshotter = &quot;stargz&quot;
+  disable_snapshot_annotations = false
+</code></pre>
+<p>在变更后, <strong>Remote Sanpshotter 将检验layer 是否符合远程挂载的要求, 如果符合, 将会直接跳过下载与解压缩部分, 直接mount remote layer.</strong> 这将大幅减少镜像处理时间。</p>
+<figure data-type="image" tabindex="2"><img src="https://wchengyen.github.io/post-images/1701596856214.jpg" alt="" loading="lazy"></figure>
+<p>当用户或者Pod 启动需要使用Layer 时, FUSE 框架将会调用Stargz-snapshotter, Snapshotter 从镜像仓库读取Layer 文件后返回给VFS, 使用者可以在无感知的情况使用。</p>
+<h2 id="小结">小结</h2>
+<p><strong>利用新镜像格式可以节约大镜像在下载以及解压缩部分时间, 但仍对仓库与K8S 间网路有一定要求, 当网路拥塞时, 也会出现问题</strong></p>
+<p>如果计划使用新镜像以及Lazy pull 功能, 需进行以下改造</p>
+<ol>
+<li>在镜像建立阶段使用Nerdctl 等工具制作新格式镜像</li>
+<li>在ContainerD 中改变设定, 使用对应 snapshotter</li>
+</ol>
+<h2 id="ref">Ref :</h2>
+<ul>
+<li>https://github.com/containerd/stargz-snapshotter</li>
+<li>https://github.com/containerd/nerdctl/blob/main/docs/stargz.md</li>
+</ul>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://wchengyen.github.io/post/k8s-jing-xiang-jia-su-fang-an-fen-xi-1/" class="post-title gt-a-link">
+                    K8S 镜像加速方案分析（1) 背景以及海外镜像
+                </a>
+            </div>
+        
+
+        
+
+        
+            
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js"></script>
+<script>
+    // md5.min.js
+    !function(n){
+        "use strict";
+        function d(n,t){var r=(65535&n)+(65535&t);return(n>>16)+(t>>16)+(r>>16)<<16|65535&r}
+        function f(n,t,r,e,o,u){return d((c=d(d(t,n),d(e,u)))<<(f=o)|c>>>32-f,r);var c,f}
+        function l(n,t,r,e,o,u,c){return f(t&r|~t&e,n,t,o,u,c)}
+        function v(n,t,r,e,o,u,c){return f(t&e|r&~e,n,t,o,u,c)}
+        function g(n,t,r,e,o,u,c){return f(t^r^e,n,t,o,u,c)}
+        function m(n,t,r,e,o,u,c){return f(r^(t|~e),n,t,o,u,c)}
+        function i(n,t){var r,e,o,u,c;n[t>>5]|=128<<t%32,n[14+(t+64>>>9<<4)]=t;var f=1732584193,i=-271733879,a=-1732584194,h=271733878;for(r=0;r<n.length;r+=16)f=l(e=f,o=i,u=a,c=h,n[r],7,-680876936),h=l(h,f,i,a,n[r+1],12,-389564586),a=l(a,h,f,i,n[r+2],17,606105819),i=l(i,a,h,f,n[r+3],22,-1044525330),f=l(f,i,a,h,n[r+4],7,-176418897),h=l(h,f,i,a,n[r+5],12,1200080426),a=l(a,h,f,i,n[r+6],17,-1473231341),i=l(i,a,h,f,n[r+7],22,-45705983),f=l(f,i,a,h,n[r+8],7,1770035416),h=l(h,f,i,a,n[r+9],12,-1958414417),a=l(a,h,f,i,n[r+10],17,-42063),i=l(i,a,h,f,n[r+11],22,-1990404162),f=l(f,i,a,h,n[r+12],7,1804603682),h=l(h,f,i,a,n[r+13],12,-40341101),a=l(a,h,f,i,n[r+14],17,-1502002290),f=v(f,i=l(i,a,h,f,n[r+15],22,1236535329),a,h,n[r+1],5,-165796510),h=v(h,f,i,a,n[r+6],9,-1069501632),a=v(a,h,f,i,n[r+11],14,643717713),i=v(i,a,h,f,n[r],20,-373897302),f=v(f,i,a,h,n[r+5],5,-701558691),h=v(h,f,i,a,n[r+10],9,38016083),a=v(a,h,f,i,n[r+15],14,-660478335),i=v(i,a,h,f,n[r+4],20,-405537848),f=v(f,i,a,h,n[r+9],5,568446438),h=v(h,f,i,a,n[r+14],9,-1019803690),a=v(a,h,f,i,n[r+3],14,-187363961),i=v(i,a,h,f,n[r+8],20,1163531501),f=v(f,i,a,h,n[r+13],5,-1444681467),h=v(h,f,i,a,n[r+2],9,-51403784),a=v(a,h,f,i,n[r+7],14,1735328473),f=g(f,i=v(i,a,h,f,n[r+12],20,-1926607734),a,h,n[r+5],4,-378558),h=g(h,f,i,a,n[r+8],11,-2022574463),a=g(a,h,f,i,n[r+11],16,1839030562),i=g(i,a,h,f,n[r+14],23,-35309556),f=g(f,i,a,h,n[r+1],4,-1530992060),h=g(h,f,i,a,n[r+4],11,1272893353),a=g(a,h,f,i,n[r+7],16,-155497632),i=g(i,a,h,f,n[r+10],23,-1094730640),f=g(f,i,a,h,n[r+13],4,681279174),h=g(h,f,i,a,n[r],11,-358537222),a=g(a,h,f,i,n[r+3],16,-722521979),i=g(i,a,h,f,n[r+6],23,76029189),f=g(f,i,a,h,n[r+9],4,-640364487),h=g(h,f,i,a,n[r+12],11,-421815835),a=g(a,h,f,i,n[r+15],16,530742520),f=m(f,i=g(i,a,h,f,n[r+2],23,-995338651),a,h,n[r],6,-198630844),h=m(h,f,i,a,n[r+7],10,1126891415),a=m(a,h,f,i,n[r+14],15,-1416354905),i=m(i,a,h,f,n[r+5],21,-57434055),f=m(f,i,a,h,n[r+12],6,1700485571),h=m(h,f,i,a,n[r+3],10,-1894986606),a=m(a,h,f,i,n[r+10],15,-1051523),i=m(i,a,h,f,n[r+1],21,-2054922799),f=m(f,i,a,h,n[r+8],6,1873313359),h=m(h,f,i,a,n[r+15],10,-30611744),a=m(a,h,f,i,n[r+6],15,-1560198380),i=m(i,a,h,f,n[r+13],21,1309151649),f=m(f,i,a,h,n[r+4],6,-145523070),h=m(h,f,i,a,n[r+11],10,-1120210379),a=m(a,h,f,i,n[r+2],15,718787259),i=m(i,a,h,f,n[r+9],21,-343485551),f=d(f,e),i=d(i,o),a=d(a,u),h=d(h,c);return[f,i,a,h]}
+        function a(n){var t,r="",e=32*n.length;for(t=0;t<e;t+=8)r+=String.fromCharCode(n[t>>5]>>>t%32&255);return r}
+        function h(n){var t,r=[];for(r[(n.length>>2)-1]=void 0,t=0;t<r.length;t+=1)r[t]=0;var e=8*n.length;for(t=0;t<e;t+=8)r[t>>5]|=(255&n.charCodeAt(t/8))<<t%32;return r}
+        function e(n){var t,r,e="0123456789abcdef",o="";for(r=0;r<n.length;r+=1)t=n.charCodeAt(r),o+=e.charAt(t>>>4&15)+e.charAt(15&t);return o}
+        function r(n){return unescape(encodeURIComponent(n))}
+        function o(n){return a(i(h(t=r(n)),8*t.length));var t}
+        function u(n,t){return function(n,t){var r,e,o=h(n),u=[],c=[];for(u[15]=c[15]=void 0,16<o.length&&(o=i(o,8*n.length)),r=0;r<16;r+=1)u[r]=909522486^o[r],c[r]=1549556828^o[r];return e=i(u.concat(h(t)),512+8*t.length),a(i(c.concat(e),640))}(r(n),r(t))}
+        function t(n,t,r){return t?r?u(t,n):e(u(t,n)):r?o(n):e(o(n))}
+        "function"==typeof define&&define.amd?define(function(){return t}):"object"==typeof module&&module.exports?module.exports=t:n.md5=t;
+    }(this);
+</script>
+
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'fa89f1702cf29c8e0e57',
+    clientSecret: '8ad620b75044d178c6188df49a171beb5bd6022a',
+    repo: 'wchengyen.github.io',
+    owner: 'wchengyen',
+    admin: ['wchengyen'],
+    id: md5(location.pathname),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false       // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+            
+
+            
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">温故而知新</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="https://wchengyen.github.io/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>
